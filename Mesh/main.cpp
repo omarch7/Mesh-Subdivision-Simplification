@@ -23,7 +23,7 @@ GLfloat xRot = 0.0f;
 GLfloat xSpeed = 0.0f;
 GLfloat yRot = 0.0f;
 GLfloat ySpeed = 0.0f;
-GLfloat zoom = -2.5f;
+GLfloat zoom = -3.5f;
 GLfloat zoomSpeed = 0.0f;
 
 GLfloat redDiffuseMaterial[] = {1.0, 0.0, 0.0};
@@ -62,7 +62,7 @@ int init(void){
     
     glEnable(GL_COLOR_MATERIAL);
     
-    return myMesh->loadMeshFromFile("cow.obj");
+    return myMesh->loadMeshFromFile("mannequin_small.obj");
 }
 
 void display(void){
@@ -81,8 +81,8 @@ void display(void){
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, whiteSpecularMaterial);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mShininess);
     
-//    glPushMatrix();
-//    glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+    glPushMatrix();
+    glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
     
     glColor3f(0.23f, 0.74f, 0.92f);
 
@@ -99,7 +99,7 @@ void display(void){
     
     glEnd();
     
-//    glPopMatrix();
+    glPopMatrix();
     
     xRot += xSpeed;
     yRot += ySpeed;

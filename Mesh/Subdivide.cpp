@@ -27,20 +27,22 @@ void Subdivide::addTriangle(SubTriangle triangle){
     }
 }
 
-void Subdivide::splitTriangleIntoFour(int tIndex){
+void Subdivide::insertCenterTriangles(int tIndex){
     SubTriangle &t = triangles[tIndex];
     int edgesVertices[3];
     for (int i = 0; i < 3; i++) {
-        edgesVertices[i] =  calculateEdgeVertex(t.v[(i+1)%3], t.v[(i+2)%3]);
+        edgesVertices[i] =  calculateEdgeVertex(t.v[i], t.v[(i+1)%3]);
     }
     SubTriangle centerTriangle = createTriangle(edgesVertices[0], edgesVertices[1], edgesVertices[2]);
-    newTriangles.emplace_back(centerTriangle);
-    SubTriangle cornerTriangle1 = createTriangle(t.v[2], centerTriangle.v[1], centerTriangle.v[0]);
-    newTriangles.emplace_back(cornerTriangle1);
-    SubTriangle cornerTriangle2 = createTriangle(t.v[0], centerTriangle.v[2], centerTriangle.v[1]);
-    newTriangles.emplace_back(cornerTriangle2);
-    SubTriangle cornerTriangle3 = createTriangle(t.v[1], centerTriangle.v[0], centerTriangle.v[2]);
-    newTriangles.emplace_back(cornerTriangle3);
+    triangles.emplace_back(centerTriangle);
+}
+
+void Subdivide::insertCornerTriangles(int tIndex, int numTriangles){
+    SubTriangle &original = triangles[tIndex];
+    SubTriangle &center = triangles[tIndex + numTriangles];
+    triangles.emplace_back(createTriangle(original.v[1], center.v[1], center.v[0]));
+    triangles.emplace_back(createTriangle(original.v[2], center.v[2], center.v[1]));
+    original = createTriangle(original.v[0], center.v[0], center.v[2]);
 }
 
 SubTriangle Subdivide::createTriangle(int v1Index, int v2Index, int v3Index){
@@ -62,13 +64,75 @@ int Subdivide::calculateEdgeVertex(int v1Index, int v2Index){
     return (int)vertices.size() - 1;
 }
 
+//int Subdivide::calculateEdgeVertex(int v1Index, int v2Index, int v3Index, int tIndex){
+//    
+//    int neighborFace = getNeighbor(v1Index, v2Index, tIndex);
+//    int vIndex;
+//    if (neighborFace > tIndex) {
+//        SubVertex &nV = vertices[getThirdVertex(v1Index, v2Index, tIndex)];
+//        glm::vec3 edgePart = vertices[v1Index].p + vertices[v2Index].p;
+//        glm::vec3 neighborPart = nV.p + vertices[v3Index].p;
+//        SubVertex eV;
+//        eV.p = ((edgePart * (3.0f/8.0f)) + (neighborPart * (1.0f/8.0f)));
+//        vIndex = (int)vertices.size();
+//        vertices.emplace_back(eV);
+//    }else{
+//        SubTriangle &t = triangles[neighborFace + numTriangles];
+//        SubTriangle &nT = triangles[neighborFace];
+//        
+//        if (nT.v[0] == v2Index) {
+//            vIndex = t.v[0];
+//        }else if (nT.v[1] == v2Index){
+//            vIndex = t.v[1];
+//        }else{
+//            vIndex = t.v[2];
+//        }
+//    }
+//    return vIndex;
+//}
+
+
+int Subdivide::getNeighbor(int v1Index, int v2Index, int tIndex){
+    int neighbor = 0;
+    SubVertex &v1 = vertices[v1Index];
+    SubVertex &v2 = vertices[v2Index];
+    for (int i = 0; i < v1.faces.size(); i++) {
+        for (int j = 0; j < v2.faces.size(); j++) {
+            if ((v1.faces[i] == v2.faces[j]) && v1.faces[i] != tIndex) {
+                neighbor = v1.faces[i];
+                break;
+            }
+        }
+    }
+    return neighbor;
+}
+
+int Subdivide::getThirdVertex(int v1Index, int v2Index, int tIndex){
+    int index = 0;
+    bool found = false;
+    SubTriangle &t = triangles[tIndex];
+    
+    while ((index < 2) && !found) {
+        if ((t.v[index] == v1Index) || (t.v[index] == v2Index)) {
+            index++;
+        }else{
+            found = true;
+        }
+    }
+    return t.v[index];
+}
+
+
 void Subdivide::subdivideMesh(){
     for (int i = 0; i < vertices.size(); i++) {
         calculateNewPosition(i);
     }
-    int numTriangles = (int)triangles.size();
+    numTriangles = (int)triangles.size();
     for (int i = 0; i < numTriangles; i++) {
-        splitTriangleIntoFour(i);
+        insertCenterTriangles(i);
+    }
+    for (int i = 0; i < numTriangles; i++) {
+        insertCornerTriangles(i, numTriangles);
     }
 }
 
@@ -113,5 +177,5 @@ std::vector<SubVertex> Subdivide::getVertices(){
 }
 
 std::vector<SubTriangle> Subdivide::getTriangles(){
-    return newTriangles;
+    return triangles;
 }

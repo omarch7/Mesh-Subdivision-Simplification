@@ -26,18 +26,22 @@ struct SubVertex{
 
 class Subdivide{
 private:
+    int numTriangles;
     std::vector<SubTriangle> triangles;
     std::vector<SubVertex> vertices;
     
     std::vector<SubTriangle> newTriangles;
     std::vector<SubVertex> newVertex;
     
+//    int calculateEdgeVertex(int v1Index, int v2Index, int v3Index, int tIndex);
     int calculateEdgeVertex(int v1Index, int v2Index);
-    void splitTriangleIntoFour(int tIndex);
+    void insertCenterTriangles(int tIndex);
+    void insertCornerTriangles(int tIndex, int numTriangles);
     SubTriangle createTriangle(int v1Index, int v2Index, int v3Index);
     void calculateNewPosition(int vIndex);
     double getAlpha(int n);
-    
+    int getThirdVertex(int v1Index, int v2Index, int tIndex);
+    int getNeighbor(int v1Index, int v2Index, int tIndex);
     
     int getNextVertex(int tIndex, int vIndex);
 public:

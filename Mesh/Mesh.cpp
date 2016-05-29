@@ -95,6 +95,8 @@ void Mesh::simplifyTenPercent(){
         }
         triangles.emplace_back(triangle);
     }
+    
+    delete simplify;
 }
 
 void Mesh::subdivideOneStep(){
@@ -144,6 +146,8 @@ void Mesh::subdivideOneStep(){
         triangle.isNew = newTriangles[i].isNew;
         triangles.emplace_back(triangle);
     }
+    
+    delete subdivide;
 }
 
 int Mesh::getTrianglesCount(){
